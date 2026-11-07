@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Additional Django files
+media/
+static/
+*.swp
+*.swo

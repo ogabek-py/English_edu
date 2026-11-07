@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Bildirishnomalar</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-body">
+    <nav class="admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Admin<span>Edu</span></span>
+            </div>
+        </div>
+        <ul class="sidebar-links">
+            <li>
+                <a href="{% url 'admin_dashboard' %}"><i class="fas fa-users"></i> Foydalanuvchilar</a>
+            </li>
+            <li class="active">
+                <a href="{% url 'admin_notifications' %}"><i class="fas fa-bell"></i> Bildirishnomalar</a>
+            </li>
+            <li>
+                <a href="/"><i class="fas fa-home"></i> Saytga qaytish</a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Chiqish
+            </button>
+        </div>
+    </nav>
+
+    <main class="admin-content">
+        <header class="content-header">
+            <div class="header-title">
+                <h1>Bildirishnomalar</h1>
+                <p>Tizimdagi so'nggi voqealar va xabarlar</p>
+            </div>
+        </header>
+
+        <section class="notifications-container">
+            <div class="notifications-list">
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <h3>{{ notification.title }}</h3>
+                            <span class="notification-time">{{ notification.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <p>{{ notification.message }}</p>
+                    </div>
+                    <div class="notification-actions">
+                        <a href="{% url 'toggle_notification_status' notification.id %}" class="btn-icon status" title="{% if notification.is_read %}O'qilmagan deb belgilash{% else %}O'qilgan deb belgilash{% endif %}">
+                            <i class="fas {% if notification.is_read %}fa-envelope-open{% else %}fa-envelope{% endif %}"></i>
+                        </a>
+                        <a href="{% url 'delete_notification' notification.id %}" class="btn-icon delete" onclick="return confirm('Haqiqatan ham o\'chirmoqchimisiz?')" title="O'chirish">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">Hozircha bildirishnomalar yo'q.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/api/login-page/';
+        }
+    </script>
+</body>
+</html>
