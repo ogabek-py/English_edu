@@ -3,102 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Foydalanuvchilar</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>Admin Dashboard - English Edu</title>
+    <link rel="stylesheet" href="/static/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="admin-body">
-    <nav class="admin-sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
-                <span>Admin<span>Edu</span></span>
+                <span>English<span>Edu</span></span>
             </div>
-        </div>
-        <ul class="sidebar-links">
-            <li class="active">
-                <a href="{% url 'admin_dashboard' %}"><i class="fas fa-users"></i> Foydalanuvchilar</a>
-            </li>
-            <li>
-                <a href="{% url 'admin_notifications' %}"><i class="fas fa-bell"></i> Bildirishnomalar</a>
-            </li>
-            <li>
-                <a href="/"><i class="fas fa-home"></i> Saytga qaytish</a>
-            </li>
-        </ul>
-        <div class="sidebar-footer">
-            <button onclick="logout()" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Chiqish
-            </button>
-        </div>
-    </nav>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-page="overview">
+                            <i class="fas fa-th-large"></i>
+                            <span>Overview</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="users">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="pending">
+                            <i class="fas fa-user-clock"></i>
+                            <span>Pending Approvals</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="activity">
+                            <i class="fas fa-chart-line"></i>
+                            <span>User Activity</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/adminpanel/notifications/" class="nav-link">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" style="margin-top: 2rem;">
+                        <a href="/" class="nav-link">
+                            <i class="fas fa-home"></i>
+                            <span>Back to Site</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-    <main class="admin-content">
-        <header class="content-header">
-            <div class="header-title">
-                <h1>Foydalanuvchilar ro'yxati</h1>
-                <p>Tizimda ro'yxatdan o'tgan barcha talabalar</p>
-            </div>
-            <div class="header-actions">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Qidirish...">
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1 class="page-title" id="page-title">Dashboard Overview</h1>
+                <div class="user-profile">
+                    <span>Admin: <strong>{{ request.user.username }}</strong></span>
+                    <button id="logout-btn" class="action-btn"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </header>
+
+            <!-- Overview Page -->
+            <div id="overview-page" class="page-content">
+                <div class="stats-grid" id="stats-grid">
+                    <!-- Stats will be loaded here via JS -->
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>User Registration Trends</h2>
+                        </div>
+                        <canvas id="registrationChart"></canvas>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Recent Audit Logs</h2>
+                        </div>
+                        <div id="recent-audit-logs">
+                            <!-- Audit logs will be loaded here -->
+                        </div>
+                    </div>
                 </div>
             </div>
-        </header>
 
-        <section class="table-container">
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>To'liq ism</th>
-                        <th>Email</th>
-                        <th>Sana</th>
-                        <th>Status</th>
-                        <th>Amallar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>#{{ user.id }}</td>
-                        <td class="username">@{{ user.username }}</td>
-                        <td>{{ user.first_name }} {{ user.last_name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.date_joined|date:"d.m.Y H:i" }}</td>
-                        <td>
-                            {% if user.is_staff %}
-                                <span class="badge staff">Admin</span>
-                            {% else %}
-                                <span class="badge student">Talaba</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="action-btns">
-                                <a href="{% url 'delete_user' user.id %}" class="btn-icon delete" onclick="return confirm('Haqiqatan ham ushbu foydalanuvchini o\'chirmoqchimisiz?')" title="O'chirish">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="empty-state">Hozircha foydalanuvchilar yo'q.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    </main>
+            <!-- Users Page -->
+            <div id="users-page" class="page-content" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 id="users-table-title">All Users</h2>
+                        <div class="search-box">
+                            <input type="text" id="user-search" placeholder="Search users..." class="action-btn" style="width: 250px; padding: 0.5rem 1rem;">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-list">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-    <script>
-        function logout() {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/api/login-page/';
-        }
-    </script>
+            <!-- User Details Modal -->
+            <div id="user-modal" class="modal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+                <div class="modal-content card" style="margin: 5% auto; width: 60%; max-height: 80vh; overflow-y: auto; position: relative;">
+                    <div class="card-header">
+                        <h2 id="modal-username">User Details</h2>
+                        <button onclick="closeModal()" class="action-btn" style="font-size: 1.5rem;">&times;</button>
+                    </div>
+                    <div id="modal-body" style="padding: 1rem;">
+                        <!-- Details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
 </body>
 </html>
