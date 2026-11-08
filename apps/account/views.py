@@ -1,3 +1,4 @@
+from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.conf import settings
@@ -61,6 +62,23 @@ class RegisterView(generics.CreateAPIView):
             title="Yangi foydalanuvchi ro'yxatdan o'tdi",
             message=f"{user.username} ({user.email}) tizimga qo'shildi. Tasdiqlash kutilmoqda."
         )
+
+class LoginView(generics.GenericAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'is_staff': user.is_staff
+            })
+        return Response({'detail': 'Username yoki parol xato.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class LogoutView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
