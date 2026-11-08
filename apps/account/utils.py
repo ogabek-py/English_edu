@@ -16,15 +16,6 @@ def send_telegram_notification(message, user_id=None):
         "text": message,
         "parse_mode": "HTML"
     }
-
-    if user_id:
-        reply_markup = {
-            "inline_keyboard": [[
-                {"text": "✅ Qabul qilish", "callback_data": f"approve_user_{user_id}"},
-                {"text": "❌ Rad etish", "callback_data": f"reject_user_{user_id}"}
-            ]]
-        }
-        payload["reply_markup"] = json.dumps(reply_markup)
     
     try:
         response = requests.post(url, json=payload)

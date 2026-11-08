@@ -52,10 +52,9 @@ class RegisterView(generics.CreateAPIView):
             f"👤 Ism: {user.first_name} {user.last_name}\n"
             f"📧 Email: {user.email}\n"
             f"🆔 Username: @{user.username}\n"
-            f"📅 Vaqt: {user.date_joined.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-            f"Ushbu foydalanuvchini tasdiqlaysizmi?"
+            f"📅 Vaqt: {user.date_joined.strftime('%Y-%m-%d %H:%M:%S')}"
         )
-        send_telegram_notification(message, user_id=user.id)
+        send_telegram_notification(message)
         
         # Site notification
         create_site_notification(
@@ -143,59 +142,5 @@ class TelegramWebhookView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        data = request.data
-        if "callback_query" in data:
-            callback_query = data["callback_query"]
-            callback_data = callback_query["data"]
-            message = callback_query["message"]
-            chat_id = message["chat"]["id"]
-            message_id = message["message_id"]
-            
-            user_id = callback_data.split("_")[-1]
-            try:
-                user = Account.objects.get(id=user_id)
-                if callback_data.startswith("approve_user_"):
-                    if not user.is_active:
-                        user.is_active = True
-                        user.is_approved = True
-                        user.save()
-                        
-                        # Foydalanuvchiga email yuborish
-                        try:
-                            send_mail(
-                                'English Edu - Hisobingiz faollashtirildi',
-                                f'Assalomu alaykum, {user.first_name or user.username}!\n\nSizning hisobingiz admin tomonidan tasdiqlandi. Endi tizimga kirishingiz mumkin.',
-                                settings.DEFAULT_FROM_EMAIL,
-                                [user.email],
-                                fail_silently=True,
-                            )
-                        except Exception as e:
-                            print(f"Email yuborishda xatolik: {e}")
-                            
-                        response_text = f"✅ Foydalanuvchi <b>{user.username}</b> tasdiqlandi va faollashtirildi."
-                    else:
-                        response_text = f"ℹ️ Foydalanuvchi <b>{user.username}</b> allaqachon faollashtirilgan."
-                        
-                elif callback_data.startswith("reject_user_"):
-                    username = user.username
-                    user.delete()
-                    response_text = f"❌ Foydalanuvchi <b>{username}</b> rad etildi va o'chirildi."
-                
-                # Update telegram message
-                self.update_telegram_message(chat_id, message_id, response_text)
-                
-            except (Account.DoesNotExist, ValueError):
-                self.update_telegram_message(chat_id, message_id, "⚠️ Xatolik: Foydalanuvchi topilmadi yoki ma'lumotlar xato.")
-                
+        # Tugmalar olib tashlangan, webhook hozircha faqat OK qaytaradi
         return Response({"status": "ok"})
-
-    def update_telegram_message(self, chat_id, message_id, text):
-        token = settings.TELEGRAM_BOT_TOKEN
-        url = f"https://api.telegram.org/bot{token}/editMessageText"
-        payload = {
-            "chat_id": chat_id,
-            "message_id": message_id,
-            "text": text,
-            "parse_mode": "HTML"
-        }
-        requests.post(url, json=payload)
