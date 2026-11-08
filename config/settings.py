@@ -162,6 +162,7 @@ AUTH_USER_MODEL = 'account.Account'
 
 # Authentication
 AUTHENTICATION_BACKENDS = [
+    'apps.account.backends.EmailOrUsernameBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
