@@ -155,20 +155,37 @@ class TelegramWebhookView(generics.GenericAPIView):
             try:
                 user = Account.objects.get(id=user_id)
                 if callback_data.startswith("approve_user_"):
-                    user.is_active = True
-                    user.is_approved = True
-                    user.save()
-                    response_text = f"✅ Foydalanuvchi @{user.username} tasdiqlandi va faollashtirildi."
+                    if not user.is_active:
+                        user.is_active = True
+                        user.is_approved = True
+                        user.save()
+                        
+                        # Foydalanuvchiga email yuborish
+                        try:
+                            send_mail(
+                                'English Edu - Hisobingiz faollashtirildi',
+                                f'Assalomu alaykum, {user.first_name or user.username}!\n\nSizning hisobingiz admin tomonidan tasdiqlandi. Endi tizimga kirishingiz mumkin.',
+                                settings.DEFAULT_FROM_EMAIL,
+                                [user.email],
+                                fail_silently=True,
+                            )
+                        except Exception as e:
+                            print(f"Email yuborishda xatolik: {e}")
+                            
+                        response_text = f"✅ Foydalanuvchi <b>{user.username}</b> tasdiqlandi va faollashtirildi."
+                    else:
+                        response_text = f"ℹ️ Foydalanuvchi <b>{user.username}</b> allaqachon faollashtirilgan."
+                        
                 elif callback_data.startswith("reject_user_"):
                     username = user.username
                     user.delete()
-                    response_text = f"❌ Foydalanuvchi @{username} rad etildi va o'chirildi."
+                    response_text = f"❌ Foydalanuvchi <b>{username}</b> rad etildi va o'chirildi."
                 
                 # Update telegram message
                 self.update_telegram_message(chat_id, message_id, response_text)
                 
-            except Account.DoesNotExist:
-                self.update_telegram_message(chat_id, message_id, "⚠️ Xatolik: Foydalanuvchi topilmadi.")
+            except (Account.DoesNotExist, ValueError):
+                self.update_telegram_message(chat_id, message_id, "⚠️ Xatolik: Foydalanuvchi topilmadi yoki ma'lumotlar xato.")
                 
         return Response({"status": "ok"})
 
